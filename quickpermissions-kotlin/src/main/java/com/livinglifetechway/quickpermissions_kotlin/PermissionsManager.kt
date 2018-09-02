@@ -1,9 +1,10 @@
 package com.livinglifetechway.quickpermissions_kotlin
 
 import android.content.Context
-import android.support.v4.app.Fragment
-import android.support.v7.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
+import androidx.fragment.app.transaction
 import com.livinglifetechway.quickpermissions_kotlin.util.PermissionCheckerFragment
 import com.livinglifetechway.quickpermissions_kotlin.util.PermissionsUtil
 import com.livinglifetechway.quickpermissions_kotlin.util.QuickPermissionsRequest
@@ -42,12 +43,12 @@ private fun runWithPermissionsHandler(target: Any?, permissions: Array<out Strin
     Log.d(TAG, "runWithPermissions: permissions to check: $permissions")
 
     // get target
-    if (target is AppCompatActivity || target is Fragment) {
+    if (target is AppCompatActivity || target is androidx.fragment.app.Fragment) {
         Log.d(TAG, "runWithPermissions: context found")
 
         val context = when (target) {
             is Context -> target
-            is Fragment -> target.context
+            is androidx.fragment.app.Fragment -> target.context
             else -> null
         }
 
@@ -68,7 +69,7 @@ private fun runWithPermissionsHandler(target: Any?, permissions: Array<out Strin
             // for app compat activity
                 is AppCompatActivity -> context.supportFragmentManager?.findFragmentByTag(PermissionCheckerFragment::class.java.canonicalName) as PermissionCheckerFragment?
             // for support fragment
-                is Fragment -> context.childFragmentManager.findFragmentByTag(PermissionCheckerFragment::class.java.canonicalName) as PermissionCheckerFragment?
+                is androidx.fragment.app.Fragment -> context.childFragmentManager.findFragmentByTag(PermissionCheckerFragment::class.java.canonicalName) as PermissionCheckerFragment?
             // else return null
                 else -> null
             }
@@ -80,18 +81,16 @@ private fun runWithPermissionsHandler(target: Any?, permissions: Array<out Strin
                 permissionCheckerFragment = PermissionCheckerFragment.newInstance()
                 when (context) {
                     is AppCompatActivity -> {
-                        context.supportFragmentManager.beginTransaction().apply {
+                        context.supportFragmentManager.transaction {
                             add(permissionCheckerFragment, PermissionCheckerFragment::class.java.canonicalName)
-                            commit()
                         }
                         // make sure fragment is added before we do any context based operations
                         context.supportFragmentManager?.executePendingTransactions()
                     }
                     is Fragment -> {
                         // this does not work at the moment
-                        context.childFragmentManager.beginTransaction().apply {
+                        context.childFragmentManager.transaction {
                             add(permissionCheckerFragment, PermissionCheckerFragment::class.java.canonicalName)
-                            commit()
                         }
                         // make sure fragment is added before we do any context based operations
                         context.childFragmentManager.executePendingTransactions()

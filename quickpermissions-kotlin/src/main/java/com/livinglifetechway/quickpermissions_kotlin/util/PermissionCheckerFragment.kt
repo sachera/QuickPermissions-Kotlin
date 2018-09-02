@@ -6,10 +6,10 @@ import android.content.pm.PackageManager
 import android.net.Uri.fromParts
 import android.os.Bundle
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-import android.support.v4.app.ActivityCompat
-import android.support.v4.app.Fragment
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
 import android.util.Log
-import org.jetbrains.anko.alert
+import androidx.appcompat.app.AlertDialog
 
 /**
  * A simple [Fragment] subclass.
@@ -121,15 +121,15 @@ class PermissionCheckerFragment : Fragment() {
                     return
                 }
 
-                activity?.alert {
-                    message = quickPermissionsRequest?.permanentlyDeniedMessage.orEmpty()
-                    positiveButton("SETTINGS") {
-                        openAppSettings()
-                    }
-                    negativeButton("CANCEL") {
-                        clean()
-                    }
-                }?.apply { isCancelable = false }?.show()
+                context?.let {
+                    AlertDialog.Builder(it)
+                            .setMessage(quickPermissionsRequest?.permanentlyDeniedMessage.orEmpty())
+                            .setPositiveButton("SETTINGS") { _,_ -> openAppSettings() }
+                            .setPositiveButton("CANCEL") { _,_ -> clean() }
+                            .setCancelable(false)
+                            .create()
+                            .show()
+                }
                 return
             }
 
@@ -141,15 +141,15 @@ class PermissionCheckerFragment : Fragment() {
                     return
                 }
 
-                activity?.alert {
-                    message = quickPermissionsRequest?.rationaleMessage.orEmpty()
-                    positiveButton("TRY AGAIN") {
-                        requestPermissionsFromUser()
-                    }
-                    negativeButton("CANCEL") {
-                        clean()
-                    }
-                }?.apply { isCancelable = false }?.show()
+                context?.let {
+                    AlertDialog.Builder(it)
+                            .setMessage(quickPermissionsRequest?.rationaleMessage.orEmpty())
+                            .setPositiveButton("TRY AGAIN") { _,_ -> requestPermissionsFromUser() }
+                            .setPositiveButton("CANCEL") { _,_ -> clean() }
+                            .setCancelable(false)
+                            .create()
+                            .show()
+                }
             }
         }
     }
